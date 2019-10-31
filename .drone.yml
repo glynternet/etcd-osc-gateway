@@ -3,7 +3,7 @@
 workspace:
 
   base: /go
-  path: src/glynternet.com/etcd-osc-gateway
+  path: src/github.com/glynternet/etcd-osc-gateway
 
 
 pipeline:
