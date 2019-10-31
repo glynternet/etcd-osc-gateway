@@ -1,0 +1,20 @@
+workspace:
+
+  base: /go
+  path: src/github.com/glynternet/pkg
+
+
+pipeline:
+
+  run-unit-tests:
+    image: golang:1.10.4
+    commands:
+      - go test -v -race ./...
+
+  # drone mounts the root directory of the repository to the container and sets
+  # it as the working directory
+  run-linters:
+    image: glynhanmer/go-linters:1.10.3-alpine3.7-v0.2.0
+    environment:
+      - CONCURRENCY=1
+
