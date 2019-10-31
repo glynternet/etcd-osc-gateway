@@ -24,7 +24,8 @@ const (
 
 func buildCmdTree(logger *log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	rootCmd.RunE = func(_ *cobra.Command, args []string) error {
-		ctx, _ := context.WithTimeout(context.Background(), requestTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		defer cancel()
 		return run(ctx, logger)
 	}
 }
