@@ -1,4 +1,4 @@
-# dubplate version: v0.3.0
+# dubplate version: v0.3.2
 
 workspace:
 
@@ -24,3 +24,6 @@ pipeline:
     image: golang:1.10.4
     commands:
       - make binaries
+    # set DOCKER_USERNAME if using docker.Makefile
+    # environment:
+      # - DOCKER_USERNAME=
