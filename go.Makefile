@@ -1,4 +1,4 @@
-# dubplate version: v0.3.2
+# dubplate version: v0.4.0
 
 OUTBIN ?= $(BUILD_DIR)/$(APP_NAME)
 
@@ -7,9 +7,6 @@ LDFLAGS = -ldflags "-w -X $(VERSION_VAR)=$(VERSION)"
 GOBUILD_FLAGS ?= -installsuffix cgo -a $(LDFLAGS) -o $(OUTBIN)
 GOBUILD_ENVVARS ?= CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH)
 GOBUILD_CMD ?= $(GOBUILD_ENVVARS) go build $(GOBUILD_FLAGS)
-
-OS ?= linux
-ARCH ?= amd64
 
 dummy:
 	@echo No default rule set yet
