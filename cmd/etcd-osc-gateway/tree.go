@@ -35,6 +35,7 @@ func run(_ context.Context, logger *log.Logger) error {
 	if err != nil {
 		return errors.Wrap(err, "creating client")
 	}
+	logger.Printf("Client created at address:%s", defaultDialAddress)
 	defer func() {
 		cErr := errors.Wrap(cli.Close(), "closing client")
 		if cErr == nil {
@@ -47,7 +48,7 @@ func run(_ context.Context, logger *log.Logger) error {
 		logger.Println(cErr)
 	}()
 
-	logger.Printf("Starting server")
+	logger.Printf("Starting server at address:%s", defaultListenAddress)
 	err = errors.Wrap((&osc2.Server{
 		Addr: defaultListenAddress,
 		Dispatcher: osc.Dispatcher{
