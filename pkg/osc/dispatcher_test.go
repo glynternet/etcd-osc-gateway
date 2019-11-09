@@ -12,16 +12,25 @@ import (
 func TestDispatcher_Dispatch(t *testing.T) {
 	t.Run("message should call KeyValuePutter", func(t *testing.T) {
 		kvp := mockKeyValuePutter{}
-		dispatcher := Dispatcher{KeyValuePutter: &kvp}
-		dispatcher.Dispatch(&osc.Message{Address: "woop", Arguments: []interface{}{"doop"}})
-		assert.Equal(t, kvp.c, context.TODO())
+		var in osc.Message
+		dispatcher := Dispatcher{
+			KeyValuePutter: &kvp,
+			HandleSuccess:  func(msg osc.Message) { in = msg },
+		}
+		msg := osc.Message{Address: "woop", Arguments: []interface{}{"doop"}}
+		dispatcher.Dispatch(&msg)
+		assert.NotNil(t, kvp.c)
 		assert.Equal(t, kvp.k, "woop")
 		assert.Equal(t, kvp.v, "doop")
+		assert.Equal(t, msg, in)
 	})
 
 	t.Run("bundle should call KeyValuePutter", func(t *testing.T) {
 		kvp := mockKeyValuePutter{}
-		dispatcher := Dispatcher{KeyValuePutter: &kvp}
+		dispatcher := Dispatcher{
+			KeyValuePutter: &kvp,
+			HandleSuccess:  func(osc.Message) {},
+		}
 		dispatcher.Dispatch(
 			&osc.Bundle{
 				Messages: []*osc.Message{
@@ -37,7 +46,7 @@ func TestDispatcher_Dispatch(t *testing.T) {
 			},
 		)
 		assert.Equal(t, kvp.callCount, 4)
-		assert.Equal(t, kvp.c, context.TODO())
+		assert.NotNil(t, kvp.c)
 		assert.Equal(t, kvp.k, "doop")
 		assert.Equal(t, kvp.v, "boop")
 	})
@@ -63,7 +72,7 @@ func TestDispatcher_dispatchMessage(t *testing.T) {
 		dispatcher := Dispatcher{KeyValuePutter: &kvp, HandleError: errHandler}
 		dispatcher.dispatchMessage(osc.Message{Address: "woop", Arguments: []interface{}{"doop"}})
 		assert.Error(t, err)
-		assert.Equal(t, kvp.c, context.TODO())
+		assert.NotNil(t, kvp.c)
 		assert.Equal(t, kvp.k, "woop")
 		assert.Equal(t, kvp.v, "doop")
 	})
