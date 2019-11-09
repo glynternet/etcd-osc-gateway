@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"time"
@@ -15,22 +16,27 @@ import (
 )
 
 const (
-	defaultDialTimeout   = time.Second
-	defaultDialAddress   = "127.0.0.1:2379"
-	defaultReadTimeout   = 250 * time.Millisecond
-	defaultListenAddress = "127.0.0.1:9000"
-	requestTimeout       = 2 * time.Second
+	defaultDialTimeout = time.Second
+	defaultDialAddress = "127.0.0.1:2379"
+	defaultReadTimeout = 250 * time.Millisecond
+	requestTimeout     = 2 * time.Second
 )
 
 func buildCmdTree(logger *log.Logger, _ io.Writer, rootCmd *cobra.Command) {
+	var listenHost string
+	var listenPort uint
+
 	rootCmd.RunE = func(_ *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cancel()
-		return run(ctx, logger)
+		return run(ctx, logger, listenHost, listenPort)
 	}
+
+	rootCmd.Flags().StringVar(&listenHost, "listen-host", "127.0.0.1", "host address to listen on")
+	rootCmd.Flags().UintVar(&listenPort, "listen-port", 9000, "host post to listen on")
 }
 
-func run(_ context.Context, logger *log.Logger) error {
+func run(_ context.Context, logger *log.Logger, listenHost string, listenPort uint) error {
 	cli, err := client(defaultDialTimeout, defaultDialAddress)
 	if err != nil {
 		return errors.Wrap(err, "creating client")
@@ -48,9 +54,11 @@ func run(_ context.Context, logger *log.Logger) error {
 		logger.Println(cErr)
 	}()
 
-	logger.Printf("Starting server at address:%s", defaultListenAddress)
+	// TODO: use Address type here
+	listenAddress := fmt.Sprintf("%s:%d", listenHost, listenPort)
+	logger.Printf("Starting server at address:%s", listenAddress)
 	err = errors.Wrap((&osc2.Server{
-		Addr: defaultListenAddress,
+		Addr: listenAddress,
 		Dispatcher: osc.Dispatcher{
 			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
 			HandleError:    loggingErrorHandler(logger),
