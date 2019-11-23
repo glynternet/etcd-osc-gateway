@@ -54,6 +54,7 @@ func run(_ context.Context, logger *log.Logger) error {
 		Dispatcher: osc.Dispatcher{
 			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
 			HandleError:    loggingErrorHandler(logger),
+			HandleSuccess:  loggingSuccessHandler(logger),
 		},
 		ReadTimeout: defaultReadTimeout,
 	}).ListenAndServe(), "serving")
@@ -64,6 +65,12 @@ func run(_ context.Context, logger *log.Logger) error {
 func loggingErrorHandler(logger *log.Logger) func(error) {
 	return func(err error) {
 		logger.Println(err)
+	}
+}
+
+func loggingSuccessHandler(logger *log.Logger) func(osc2.Message) {
+	return func(msg osc2.Message) {
+		logger.Println(msg)
 	}
 }
 
