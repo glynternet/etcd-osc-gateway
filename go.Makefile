@@ -1,4 +1,4 @@
-# dubplate version: v0.4.0
+# dubplate version: v0.5.1
 
 OUTBIN ?= $(BUILD_DIR)/$(APP_NAME)
 
