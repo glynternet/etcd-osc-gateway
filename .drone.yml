@@ -1,9 +1,9 @@
-# dubplate version: v0.4.0
+# dubplate version: v0.5.1
 
 workspace:
 
-  base: /go
-  path: src/github.com/glynternet/etcd-osc-gateway
+  base: /go/src
+  path: github.com/glynternet/etcd-osc-gateway
 
 
 pipeline:
@@ -18,7 +18,7 @@ pipeline:
   run-linters:
     image: glynhanmer/go-linters:1.10.3-alpine3.7-v0.2.0
     environment:
-      - CONCURRENCY=4
+      - CONCURRENCY=2
 
   build-binaries:
     image: golang:1.10.4
