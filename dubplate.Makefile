@@ -1,4 +1,4 @@
-# dubplate version: v0.5.1
+# dubplate version: v0.5.2
 
 ROOT_DIR ?= $(shell git rev-parse --show-toplevel)
 UNTRACKED ?= $(shell test -z "$(shell git ls-files --others --exclude-standard "$(ROOT_DIR)")" || echo -untracked)

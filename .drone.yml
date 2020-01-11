@@ -1,4 +1,4 @@
-# dubplate version: v0.5.1
+# dubplate version: v0.5.2
 
 workspace:
 
@@ -9,19 +9,19 @@ workspace:
 pipeline:
 
   run-unit-tests:
-    image: golang:1.10.4
+    image: golang:1.13.6
     commands:
       - go test -v -race ./...
 
   # drone mounts the root directory of the repository to the container and sets
   # it as the working directory
   run-linters:
-    image: glynhanmer/go-linters:1.10.3-alpine3.7-v0.2.0
-    environment:
-      - CONCURRENCY=2
+    image: golangci/golangci-lint:v1.22.2-alpine
+    commands:
+      - golangci-lint run -v
 
   build-binaries:
-    image: golang:1.10.4
+    image: golang:1.13.6
     commands:
       - make binaries
     # set DOCKER_USERNAME if using docker.Makefile
