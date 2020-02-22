@@ -1,4 +1,4 @@
-# dubplate version: v0.5.2
+# dubplate version: v0.7.0
 
 dockerfile:
 	$(MAKE) Dockerfile.$(APP_NAME)
@@ -11,6 +11,12 @@ image: Dockerfile.$(APP_NAME) check-docker-username
 		--tag $(DOCKER_USERNAME)/$(APP_NAME):$(VERSION) \
 		-f $(BUILD_DIR)/Dockerfile.$(APP_NAME) \
 		$(BUILD_DIR)
+
+images: $(COMPONENTS:=-image)
+
+$(COMPONENTS:=-image):
+	$(MAKE) image \
+		APP_NAME=$(@:-image=)
 
 check-docker-username:
 ifndef DOCKER_USERNAME

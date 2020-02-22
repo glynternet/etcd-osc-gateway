@@ -1,4 +1,4 @@
-# dubplate version: v0.5.2
+# dubplate version: v0.7.0
 
 OUTBIN ?= $(BUILD_DIR)/$(APP_NAME)
 
@@ -14,11 +14,12 @@ dummy:
 binary: $(BUILD_DIR)
 	$(GOBUILD_CMD) ./cmd/$(APP_NAME)
 
-binaries: $(BINARIES)
+binaries: $(COMPONENTS:=-binary)
 
-$(BINARIES):
-	$(MAKE) cmd-all \
-		APP_NAME=$@
+$(COMPONENTS:=-binary):
+	$(MAKE) binary \
+		APP_NAME=$(@:-binary=)
+
 
 test-binary-version-output: VERSION_CMD ?= $(OUTBIN) version
 test-binary-version-output:
