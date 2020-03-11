@@ -24,3 +24,5 @@ component-all: binary test-binary-version-output image
 
 image:
 	@echo skipping image build...
+
+images: ;

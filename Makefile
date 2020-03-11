@@ -1,4 +1,4 @@
-BINARIES ?= etcd-osc-gateway
+COMPONENTS ?= etcd-osc-gateway
 
 include ./dubplate.Makefile
 include ./go.Makefile
