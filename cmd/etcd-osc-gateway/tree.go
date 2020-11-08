@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+	"net"
+	"net/http"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/glynternet/etcd-osc-gateway/pkg/etcd"
 	"github.com/glynternet/etcd-osc-gateway/pkg/osc"
 	osc2 "github.com/glynternet/go-osc/osc"
+	"github.com/glynternet/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.etcd.io/etcd/client"
 )
 
 const (
@@ -22,7 +24,7 @@ const (
 	requestTimeout     = 2 * time.Second
 )
 
-func buildCmdTree(logger *log.Logger, _ io.Writer, rootCmd *cobra.Command) {
+func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	var listenHost string
 	var listenPort uint
 
@@ -36,32 +38,32 @@ func buildCmdTree(logger *log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	rootCmd.Flags().UintVar(&listenPort, "listen-port", 9000, "host post to listen on")
 }
 
-func run(_ context.Context, logger *log.Logger, listenHost string, listenPort uint) error {
-	cli, err := client(defaultDialTimeout, defaultDialAddress)
+func run(_ context.Context, logger log.Logger, listenHost string, listenPort uint) error {
+	cli, err := etcdClient(defaultDialTimeout, defaultDialAddress)
 	if err != nil {
 		return errors.Wrap(err, "creating client")
 	}
-	logger.Printf("Client created at address:%s", defaultDialAddress)
-	defer func() {
-		cErr := errors.Wrap(cli.Close(), "closing client")
-		if cErr == nil {
-			return
-		}
-		if err == nil {
-			err = cErr
-			return
-		}
-		logger.Println(cErr)
-	}()
+	if err := logger.Log(log.Message("Client created at address:%s"),
+		log.KV{
+			K: "dialAddress",
+			V: defaultDialAddress,
+		},
+	); err != nil {
+		return errors.Wrap(err, "logging during startup")
+	}
 
 	// TODO: use Address type here
 	listenAddress := fmt.Sprintf("%s:%d", listenHost, listenPort)
-	logger.Printf("Starting server at address:%s", listenAddress)
+	_ = logger.Log(log.Message("Starting server"), log.KV{
+		K: "address",
+		V: listenAddress,
+	})
+
 	err = errors.Wrap((&osc2.Server{
 		Addr: listenAddress,
 		Dispatcher: osc.Dispatcher{
-			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
-			HandleError:    loggingErrorHandler(logger),
+			KeyValuePutter: etcd.Client{KeysAPI: client.NewKeysAPI(cli)},
+			HandleError:    dispatchErrorLogger(logger),
 			HandleSuccess:  loggingSuccessHandler(logger),
 		},
 		ReadTimeout: defaultReadTimeout,
@@ -70,21 +72,31 @@ func run(_ context.Context, logger *log.Logger, listenHost string, listenPort ui
 	return err
 }
 
-func loggingErrorHandler(logger *log.Logger) func(error) {
+func dispatchErrorLogger(logger log.Logger) func(error) {
 	return func(err error) {
-		logger.Println(err)
+		_ = logger.Log(log.Message("error dispatching message"), log.Error(err))
 	}
 }
 
-func loggingSuccessHandler(logger *log.Logger) func(osc2.Message) {
+func loggingSuccessHandler(logger log.Logger) func(osc2.Message) {
 	return func(msg osc2.Message) {
-		logger.Println(msg)
+		_ = logger.Log(log.Message("message sent"), log.KV{
+			K: "message",
+			V: msg,
+		})
 	}
 }
 
-func client(dialTimeout time.Duration, addr string) (*clientv3.Client, error) {
-	return clientv3.New(clientv3.Config{
-		DialTimeout: dialTimeout,
-		Endpoints:   []string{addr},
+func etcdClient(dialTimeout time.Duration, addr string) (client.Client, error) {
+	return client.New(client.Config{
+		Endpoints: []string{addr},
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   dialTimeout,
+				KeepAlive: time.Minute,
+			}).DialContext,
+			TLSHandshakeTimeout: 10 * time.Second,
+		},
 	})
 }
