@@ -19,7 +19,6 @@ import (
 
 const (
 	defaultDialTimeout = time.Second
-	defaultDialAddress = "127.0.0.1:2379"
 	defaultReadTimeout = 250 * time.Millisecond
 	requestTimeout     = 2 * time.Second
 )
@@ -27,26 +26,31 @@ const (
 func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	var listenHost string
 	var listenPort uint
+	var etcdCfg etcdDialConfig
 
 	rootCmd.RunE = func(_ *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cancel()
-		return run(ctx, logger, listenHost, listenPort)
+		return run(ctx, logger, listenHost, listenPort, etcdCfg)
 	}
 
 	rootCmd.Flags().StringVar(&listenHost, "listen-host", "127.0.0.1", "host address to listen on")
 	rootCmd.Flags().UintVar(&listenPort, "listen-port", 9000, "host post to listen on")
+	rootCmd.Flags().StringVar(&etcdCfg.scheme, "etcd-scheme", "http", "ectd scheme")
+	rootCmd.Flags().StringVar(&etcdCfg.host, "etcd-host", "127.0.0.1", "ectd host")
+	rootCmd.Flags().UintVar(&etcdCfg.port, "etcd-port", 2379, "ectd port")
 }
 
-func run(_ context.Context, logger log.Logger, listenHost string, listenPort uint) error {
-	cli, err := etcdClient(defaultDialTimeout, defaultDialAddress)
+func run(_ context.Context, logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDialConfig) error {
+	etcdDialAddr := etcdCfg.dialAddress()
+	cli, err := etcdClient(defaultDialTimeout, etcdDialAddr)
 	if err != nil {
 		return errors.Wrap(err, "creating client")
 	}
 	if err := logger.Log(log.Message("Client created at address:%s"),
 		log.KV{
 			K: "dialAddress",
-			V: defaultDialAddress,
+			V: etcdDialAddr,
 		},
 	); err != nil {
 		return errors.Wrap(err, "logging during startup")
