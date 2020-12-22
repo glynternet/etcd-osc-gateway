@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
-	"net/http"
 	"time"
 
 	"github.com/glynternet/etcd-osc-gateway/pkg/etcd"
@@ -14,7 +12,7 @@ import (
 	"github.com/glynternet/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"go.etcd.io/etcd/client"
+	"go.etcd.io/etcd/clientv3"
 )
 
 const (
@@ -66,7 +64,7 @@ func run(_ context.Context, logger log.Logger, listenHost string, listenPort uin
 	err = errors.Wrap((&osc2.Server{
 		Addr: listenAddress,
 		Dispatcher: osc.Dispatcher{
-			KeyValuePutter: etcd.Client{KeysAPI: client.NewKeysAPI(cli)},
+			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
 			HandleError:    dispatchErrorLogger(logger),
 			HandleSuccess:  loggingSuccessHandler(logger),
 		},
@@ -85,22 +83,17 @@ func dispatchErrorLogger(logger log.Logger) func(error) {
 func loggingSuccessHandler(logger log.Logger) func(osc2.Message) {
 	return func(msg osc2.Message) {
 		_ = logger.Log(log.Message("message sent"), log.KV{
-			K: "message",
+			K: "oscMessage",
 			V: msg,
 		})
 	}
 }
 
-func etcdClient(dialTimeout time.Duration, addr string) (client.Client, error) {
-	return client.New(client.Config{
-		Endpoints: []string{addr},
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   dialTimeout,
-				KeepAlive: time.Minute,
-			}).DialContext,
-			TLSHandshakeTimeout: 10 * time.Second,
-		},
+func etcdClient(dialTimeout time.Duration, addr string) (*clientv3.Client, error) {
+	return clientv3.New(clientv3.Config{
+		Endpoints:            []string{addr},
+		DialTimeout:          dialTimeout,
+		DialKeepAliveTime:    5 * time.Second,
+		DialKeepAliveTimeout: time.Minute,
 	})
 }

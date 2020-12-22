@@ -2,10 +2,8 @@ module github.com/glynternet/etcd-osc-gateway
 
 go 1.15
 
-replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.5
-
 require (
-	github.com/coreos/etcd v3.3.25+incompatible // indirect
+	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/glynternet/go-osc v0.0.0-20200115085105-85fee7fed692
 	github.com/glynternet/pkg v0.0.0-20201103183323-b87c0e4e34f8
 	github.com/go-kit/kit v0.10.0 // indirect
