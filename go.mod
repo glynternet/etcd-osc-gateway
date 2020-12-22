@@ -9,7 +9,7 @@ require (
 	github.com/go-kit/kit v0.10.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v0.0.3
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.4.0
 	go.etcd.io/etcd v3.3.25+incompatible
