@@ -34,9 +34,9 @@ func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 
 	rootCmd.Flags().StringVar(&listenHost, "listen-host", "127.0.0.1", "host address to listen on")
 	rootCmd.Flags().UintVar(&listenPort, "listen-port", 9000, "host post to listen on")
-	rootCmd.Flags().StringVar(&etcdCfg.scheme, "etcd-scheme", "http", "ectd scheme")
-	rootCmd.Flags().StringVar(&etcdCfg.host, "etcd-host", "127.0.0.1", "ectd host")
-	rootCmd.Flags().UintVar(&etcdCfg.port, "etcd-port", 2379, "ectd port")
+	rootCmd.Flags().StringVar(&etcdCfg.scheme, "etcd-scheme", "http", "etcd scheme")
+	rootCmd.Flags().StringVar(&etcdCfg.host, "etcd-host", "127.0.0.1", "etcd host")
+	rootCmd.Flags().UintVar(&etcdCfg.port, "etcd-port", 2379, "etcd port")
 }
 
 func run(_ context.Context, logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDialConfig) error {
