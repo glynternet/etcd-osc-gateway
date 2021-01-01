@@ -8,16 +8,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Dispatcher dispatches OSC Packet messages to the KeyValuePutter
+// KeyValueDispatcher extracts key value pairs from OSC Packets passes them to the KeyValuePutter.
 // HandleError and HandleSuccess must be non-nil. Nil values for these fields will cause panics during use.
-type Dispatcher struct {
+type KeyValueDispatcher struct {
 	KeyValuePutter
 	HandleError   func(error)
-	HandleSuccess func(message osc.Message)
+	HandleSuccess func(message osc.Message, k, v string)
 }
 
 // Dispatch dispatches OSC Packet messages to the KeyValuePutter
-func (d Dispatcher) Dispatch(packet osc.Packet) {
+func (d KeyValueDispatcher) Dispatch(packet osc.Packet) {
 	switch p := packet.(type) {
 	case *osc.Message:
 		d.dispatchMessage(*p)
@@ -32,19 +32,18 @@ func (d Dispatcher) Dispatch(packet osc.Packet) {
 	}
 }
 
-func (d Dispatcher) dispatchMessage(msg osc.Message) {
+func (d KeyValueDispatcher) dispatchMessage(msg osc.Message) {
 	k, v, err := getKeyValue(msg)
 	if err != nil {
 		d.HandleError(err)
 		return
 	}
 
-	//TODO(glynternet): where should we get the context from?
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	if err := d.KeyValuePutter.Put(ctx, k, v); err != nil {
 		d.HandleError(errors.Wrap(err, "putting key-value pair into store"))
 		return
 	}
-	d.HandleSuccess(msg)
+	d.HandleSuccess(msg, k, v)
 }

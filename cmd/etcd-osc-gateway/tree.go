@@ -63,7 +63,7 @@ func run(_ context.Context, logger log.Logger, listenHost string, listenPort uin
 
 	err = errors.Wrap((&osc2.Server{
 		Addr: listenAddress,
-		Dispatcher: osc.Dispatcher{
+		Dispatcher: osc.KeyValueDispatcher{
 			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
 			HandleError:    dispatchErrorLogger(logger),
 			HandleSuccess:  loggingSuccessHandler(logger),
@@ -76,16 +76,17 @@ func run(_ context.Context, logger log.Logger, listenHost string, listenPort uin
 
 func dispatchErrorLogger(logger log.Logger) func(error) {
 	return func(err error) {
-		_ = logger.Log(log.Message("error dispatching message"), log.Error(err))
+		_ = logger.Log(log.Message("error sending key value pair"), log.Error(err))
 	}
 }
 
-func loggingSuccessHandler(logger log.Logger) func(osc2.Message) {
-	return func(msg osc2.Message) {
-		_ = logger.Log(log.Message("message sent"), log.KV{
-			K: "oscMessage",
-			V: msg,
-		})
+func loggingSuccessHandler(logger log.Logger) func(osc2.Message, string, string) {
+	return func(msg osc2.Message, k, v string) {
+		_ = logger.Log(log.Message("key value pair sent"),
+			log.KV{K: "oscMessage", V: msg},
+			log.KV{K: "key", V: k},
+			log.KV{K: "value", V: v},
+		)
 	}
 }
 

@@ -12,24 +12,31 @@ import (
 func TestDispatcher_Dispatch(t *testing.T) {
 	t.Run("message should call KeyValuePutter", func(t *testing.T) {
 		kvp := mockKeyValuePutter{}
-		var in osc.Message
-		dispatcher := Dispatcher{
+		var successHandleMsg osc.Message
+		var successHandleK, successHandleV string
+		dispatcher := KeyValueDispatcher{
 			KeyValuePutter: &kvp,
-			HandleSuccess:  func(msg osc.Message) { in = msg },
+			HandleSuccess: func(msg osc.Message, k, v string) {
+				successHandleMsg = msg
+				successHandleK = k
+				successHandleV = v
+			},
 		}
 		msg := osc.Message{Address: "woop", Arguments: []interface{}{"doop"}}
 		dispatcher.Dispatch(&msg)
 		assert.NotNil(t, kvp.c)
-		assert.Equal(t, kvp.k, "woop")
-		assert.Equal(t, kvp.v, "doop")
-		assert.Equal(t, msg, in)
+		assert.Equal(t, "woop", kvp.k)
+		assert.Equal(t, "doop", kvp.v)
+		assert.Equal(t, msg, successHandleMsg)
+		assert.Equal(t, "woop", successHandleK)
+		assert.Equal(t, "doop", successHandleV)
 	})
 
 	t.Run("bundle should call KeyValuePutter", func(t *testing.T) {
 		kvp := mockKeyValuePutter{}
-		dispatcher := Dispatcher{
+		dispatcher := KeyValueDispatcher{
 			KeyValuePutter: &kvp,
-			HandleSuccess:  func(osc.Message) {},
+			HandleSuccess:  func(osc.Message, string, string) {},
 		}
 		dispatcher.Dispatch(
 			&osc.Bundle{
@@ -57,7 +64,7 @@ func TestDispatcher_dispatchMessage(t *testing.T) {
 		var err error
 		errHandler := func(inErr error) { err = inErr }
 		kvp := mockKeyValuePutter{}
-		dispatcher := Dispatcher{KeyValuePutter: &kvp, HandleError: errHandler}
+		dispatcher := KeyValueDispatcher{KeyValuePutter: &kvp, HandleError: errHandler}
 		dispatcher.dispatchMessage(osc.Message{})
 		assert.Error(t, err)
 		assert.Nil(t, kvp.c)
@@ -69,7 +76,7 @@ func TestDispatcher_dispatchMessage(t *testing.T) {
 		var err error
 		errHandler := func(inErr error) { err = inErr }
 		kvp := mockKeyValuePutter{error: errors.New("foo")}
-		dispatcher := Dispatcher{KeyValuePutter: &kvp, HandleError: errHandler}
+		dispatcher := KeyValueDispatcher{KeyValuePutter: &kvp, HandleError: errHandler}
 		dispatcher.dispatchMessage(osc.Message{Address: "woop", Arguments: []interface{}{"doop"}})
 		assert.Error(t, err)
 		assert.NotNil(t, kvp.c)
