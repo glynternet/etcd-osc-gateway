@@ -94,6 +94,8 @@ github.com/glynternet/go-osc v0.0.0-20200115085105-85fee7fed692 h1:7MIMYh5IgFaHe
 github.com/glynternet/go-osc v0.0.0-20200115085105-85fee7fed692/go.mod h1:+9ea35fWocsAZ1+AnLt85/RAVOT4WGwqJblNqgDDcw8=
 github.com/glynternet/pkg v0.0.0-20201103183323-b87c0e4e34f8 h1:bEsKuhVCAn6bJp/9sfUrxZW4gXWCtU+Nt1j5o2T7pt4=
 github.com/glynternet/pkg v0.0.0-20201103183323-b87c0e4e34f8/go.mod h1:jNStwa1i//QuPYkWtDq3fY75pufLYzj15eXKfOWiIsY=
+github.com/glynternet/pkg v0.0.2 h1:+yzphlwEp8KD6yMigk37uC1nbXCCic2W3S0GntUdxvw=
+github.com/glynternet/pkg v0.0.2/go.mod h1:jNStwa1i//QuPYkWtDq3fY75pufLYzj15eXKfOWiIsY=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
