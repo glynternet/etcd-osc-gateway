@@ -76,7 +76,7 @@ func run(_ context.Context, logger log.Logger, listenHost string, listenPort uin
 
 func dispatchErrorLogger(logger log.Logger) func(error) {
 	return func(err error) {
-		_ = logger.Log(log.Message("error sending key value pair"), log.Error(err))
+		_ = logger.Log(log.Message("error sending key value pair"), log.ErrorMessage(err))
 	}
 }
 
