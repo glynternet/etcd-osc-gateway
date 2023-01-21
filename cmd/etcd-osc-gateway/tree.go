@@ -19,6 +19,15 @@ func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	var listenPort uint
 	var etcdCfg etcdDialConfig
 
+	rootCmd.Long = `etcd-osc-gateway stores OSC messages as key-value pairs in an etcd store.
+
+Any message received is expected to have a single string argument,
+which is the value that will be stored in etcd using the message's
+address as the key.
+
+If a OSC bundle is received, each message is expected to be in the
+same format as described above and each is pushed to etcd.
+`
 	rootCmd.RunE = func(_ *cobra.Command, args []string) error {
 		return run(logger, listenHost, listenPort, etcdCfg)
 	}
