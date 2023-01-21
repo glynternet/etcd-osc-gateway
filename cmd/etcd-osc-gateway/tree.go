@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"time"
@@ -18,7 +17,6 @@ import (
 const (
 	defaultDialTimeout = time.Second
 	defaultReadTimeout = 250 * time.Millisecond
-	requestTimeout     = 2 * time.Second
 )
 
 func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
@@ -27,9 +25,7 @@ func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	var etcdCfg etcdDialConfig
 
 	rootCmd.RunE = func(_ *cobra.Command, args []string) error {
-		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-		defer cancel()
-		return run(ctx, logger, listenHost, listenPort, etcdCfg)
+		return run(logger, listenHost, listenPort, etcdCfg)
 	}
 
 	rootCmd.Flags().StringVar(&listenHost, "listen-host", "127.0.0.1", "host address to listen on")
@@ -39,7 +35,7 @@ func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 	rootCmd.Flags().UintVar(&etcdCfg.port, "etcd-port", 2379, "etcd port")
 }
 
-func run(_ context.Context, logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDialConfig) error {
+func run(logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDialConfig) error {
 	etcdDialAddr := etcdCfg.dialAddress()
 	cli, err := etcdClient(defaultDialTimeout, etcdDialAddr)
 	if err != nil {
