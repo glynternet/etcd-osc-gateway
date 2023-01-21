@@ -57,7 +57,7 @@ func run(logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDial
 		V: listenAddress,
 	})
 
-	err = errors.Wrap((&osc2.Server{
+	return errors.Wrap((&osc2.Server{
 		Addr: listenAddress,
 		Dispatcher: osc.KeyValueDispatcher{
 			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
@@ -66,8 +66,6 @@ func run(logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDial
 		},
 		ReadTimeout: defaultReadTimeout,
 	}).ListenAndServe(), "serving")
-
-	return err
 }
 
 func dispatchErrorLogger(logger log.Logger) func(error) {
