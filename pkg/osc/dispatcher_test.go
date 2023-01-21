@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/glynternet/go-osc/osc"
+	"github.com/hypebeast/go-osc/osc"
 	"github.com/stretchr/testify/assert"
 )
 

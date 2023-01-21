@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/glynternet/go-osc/osc"
+	"github.com/hypebeast/go-osc/osc"
 )
 
 // KeyValuePutter puts a key and value string

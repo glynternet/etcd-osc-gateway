@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/glynternet/go-osc/osc"
+	"github.com/hypebeast/go-osc/osc"
 	"github.com/pkg/errors"
 )
 

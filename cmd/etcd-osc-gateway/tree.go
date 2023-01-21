@@ -7,8 +7,8 @@ import (
 
 	"github.com/glynternet/etcd-osc-gateway/pkg/etcd"
 	"github.com/glynternet/etcd-osc-gateway/pkg/osc"
-	osc2 "github.com/glynternet/go-osc/osc"
 	"github.com/glynternet/pkg/log"
+	osc2 "github.com/hypebeast/go-osc/osc"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.etcd.io/etcd/clientv3"
