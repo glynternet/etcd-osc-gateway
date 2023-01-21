@@ -8,15 +8,10 @@ import (
 	"github.com/glynternet/etcd-osc-gateway/pkg/etcd"
 	"github.com/glynternet/etcd-osc-gateway/pkg/osc"
 	"github.com/glynternet/pkg/log"
-	osc2 "github.com/hypebeast/go-osc/osc"
+	goosc "github.com/hypebeast/go-osc/osc"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.etcd.io/etcd/clientv3"
-)
-
-const (
-	defaultDialTimeout = time.Second
-	defaultReadTimeout = 250 * time.Millisecond
 )
 
 func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
@@ -37,7 +32,7 @@ func buildCmdTree(logger log.Logger, _ io.Writer, rootCmd *cobra.Command) {
 
 func run(logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDialConfig) error {
 	etcdDialAddr := etcdCfg.dialAddress()
-	cli, err := etcdClient(defaultDialTimeout, etcdDialAddr)
+	cli, err := etcdClient(etcdDialAddr)
 	if err != nil {
 		return errors.Wrap(err, "creating client")
 	}
@@ -57,14 +52,14 @@ func run(logger log.Logger, listenHost string, listenPort uint, etcdCfg etcdDial
 		V: listenAddress,
 	})
 
-	return errors.Wrap((&osc2.Server{
+	return errors.Wrap((&goosc.Server{
 		Addr: listenAddress,
 		Dispatcher: osc.KeyValueDispatcher{
 			KeyValuePutter: etcd.Client{KV: clientv3.NewKV(cli)},
 			HandleError:    dispatchErrorLogger(logger),
 			HandleSuccess:  loggingSuccessHandler(logger),
 		},
-		ReadTimeout: defaultReadTimeout,
+		ReadTimeout: 250 * time.Millisecond,
 	}).ListenAndServe(), "serving")
 }
 
@@ -74,8 +69,8 @@ func dispatchErrorLogger(logger log.Logger) func(error) {
 	}
 }
 
-func loggingSuccessHandler(logger log.Logger) func(osc2.Message, string, string) {
-	return func(msg osc2.Message, k, v string) {
+func loggingSuccessHandler(logger log.Logger) func(goosc.Message, string, string) {
+	return func(msg goosc.Message, k, v string) {
 		_ = logger.Log(log.Message("key value pair sent"),
 			log.KV{K: "oscMessage", V: msg},
 			log.KV{K: "key", V: k},
@@ -84,10 +79,10 @@ func loggingSuccessHandler(logger log.Logger) func(osc2.Message, string, string)
 	}
 }
 
-func etcdClient(dialTimeout time.Duration, addr string) (*clientv3.Client, error) {
+func etcdClient(addr string) (*clientv3.Client, error) {
 	return clientv3.New(clientv3.Config{
 		Endpoints:            []string{addr},
-		DialTimeout:          dialTimeout,
+		DialTimeout:          time.Second,
 		DialKeepAliveTime:    5 * time.Second,
 		DialKeepAliveTimeout: time.Minute,
 	})
